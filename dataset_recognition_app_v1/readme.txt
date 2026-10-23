@@ -1,2 +1,2 @@
 
-Files for the application: -
+Files for the application
