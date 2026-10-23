@@ -1,0 +1,16 @@
+
+
+Petalinux installer used: - 
+--------------------------------
+petalinux-v2025.1-05180714-installer.run
+
+
+BSP file used: -
+-------------------
+xilinx-kv260-starterkit-v2025.1-05221048.bsp
+
+
+
+
+Reference: -
+1. https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/BSP-Packaging?tocId=7w1NZ7w5D~1Yr_IGIVm_Rg
