@@ -1,0 +1,153 @@
+
+Prequisite: -
+=============
+1. I need to have .xsa file built using VIVADO IDE.
+2. Before building update the file - ".petalinux/metadata" as below.
+-HDF_EXT=sdt
++HDF_EXT=xsa
+
+
+Project build and install commands: -
+======================================
+
+This is the exact workflow that bypassed the locked QSPI flash, the missing PMU firmware, and the DDR memory mismatch.
+
+### Step 1: Environment Setup & Project Creation
+----------------------------------------------------
+I started with the **PetaLinux 2025.1** tools and the **2025.1 KV260 BSP**.
+
+# 1. Source the PetaLinux environment
+source /opt/PetaLinux_SDK/settings.sh
+
+# 2. Create the project from the BSP
+cd ~/Documents/Kria-KV260/Peta_Projects
+petalinux-create project -s /home/mirfai/Documents/Kria-KV260/Thesis_Option_4/BSP_KV260/xilinx-kv260-starterkit-v2025.1-05221048.bsp -n KV260_Linux
+
+# 3. Enter the project directory
+cd KV260_Linux
+
+### Step 2: Hardware Configuration (Vivado .xsa)
+--------------------------------------------------
+I imported our exported Vivado hardware (.xsa) containing the custom CNN IP and the fixed DDR memory preset.
+
+# 4. Import the hardware description
+petalinux-config --get-hw-description=<path to the hardware description or xsa file>
+
+petalinux-config --get-hw-description=/home/mirfai/Documents/Kria-KV260/Thesis_Option_4/LeNet5
+
+
+**Inside the "petalinux-config" Menu:**
+Navigated to "Subsystem AUTO Hardware Settings -> DTG Settings -> Kernel Bootargs" and
+disabled "generate boot args automatically", then pasted these exact user bootargs:
+
+earlycon console=ttyPS1,115200 root=/dev/mmcblk1p2 rw rootwait cpuidle.off=1 uio_pdrv_genirq.of_id=generic-uio clk_ignore_unused init_fatal_sh=1 cma=256M
+
+### Step 3: Device Tree Modification (system-user.dtsi)
+---------------------------------------------------------
+To allow Linux to talk to our custom CNN IP via the UIO driver, we edited the device tree overlay.
+
+# 5. Edit the device tree file
+vim project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi
+
+**Content added to system-user.dtsi:**
+
+/include/ "system-conf.dtsi"
+
+&cnn_top_0 {
+    compatible = "generic-uio";
+    status = "okay";
+    /* Overwrite the reg property to cover control + BRAMs (256KB total) */
+    reg = <0x0 0xa0000000 0x0 0x40000>;
+};
+
+### Step 4: Building PetaLinux
+----------------------------------
+I ran the build process to compile the kernel, rootfs, and device tree.
+
+# 6. Clean the build (used whenever you changed the hardware/DTS)
+petalinux-build -x distclean
+
+# 7. Build the project
+petalinux-build
+
+
+### Step 5: Generating the Boot Files (The Fixes)
+----------------------------------------------------
+Generating "system.bit.bin": -
+Linux requires the bitstream to be in raw binary format (bit.bin), not the Vivado `.bit` format.
+
+# 8. Go to the images folder
+cd images/linux/
+
+# 9. Create a BIF file for the bitstream conversion
+echo 'all: { system.bit }' > bitstream.bif
+
+# 10. Convert to .bin format
+bootgen -image bitstream.bif -arch zynqmp -process_bitstream bin -o system.bit.bin -w
+
+#### B. Generating `BOOT.BIN` (The working command)
+The standard "petalinux-package --boot" command dropped the "pmufw.elf" (PMU firmware), causing the 2025.1 FSBL to crash.
+Created a custom ".bif" and used "bootgen" to fix this.
+
+# 11. Create the custom boot BIF file (without bitstream and dtb to avoid PCAP hangs)
+cat <<EOF > custom_boot.bif
+the_ROM_image:
+{
+    [fsbl_config] a53_x64
+    [bootloader, destination_cpu=a53-0] zynqmp_fsbl.elf
+    [destination_cpu=pmu] pmufw.elf
+    [destination_cpu=a53-0, exception_level=el-3, trustzone] bl31.elf
+    [destination_cpu=a53-0, exception_level=el-2] u-boot.elf
+}
+EOF
+
+# 12. Generate the correct BOOT.BIN
+bootgen -arch zynqmp -image custom_boot.bif -o BOOT.BIN -w on
+
+# 13. Verify that the PMU firmware is actually inside
+bootgen -read BOOT.BIN | grep -i pmufw
+
+
+### Step 6: SD Card Preparation (Simplified)
+----------------------------------------------
+
+# 14. Manually copy the files to your PetaLinux SD Card's FAT32 partition:**
+ Image, system.dtb, ramdisk.cpio.gz.u-boot, system.bit.bin
+
+
+### Step 7: Boot and Run (The Working Method)
+-----------------------------------------------
+
+Boot the board, Insert the SD card, power on the board, and open Minicom. Let it boot all the way to the PetaLinux
+login prompt. It will use the factory 2023.2 firmware to load our 2025.1 "Image".
+
+# 15. Log in as "petalinux" and password as "petalinux".
+
+# 16. Load the bitstream into the FPGA:
+cd /home/petalinux/App
+sudo fpgautil -b system.bit.bin
+
+# 17. Verify the UIO driver recognized your CNN:
+ls /dev/uio*
+
+We should see "/dev/uio4".
+
+# 18. Run the application:**
+sudo ./main_app
+
+By skipping the Ubuntu/QSPI flashing step, we saved a massive amount of time. The board just uses
+the factory bootloader, and we manually inject your custom hardware and Linux kernel from the SD card. 
+
+Note for your thesis documentation: We can state that we used the factory QSPI bootloader to boot the
+2025.1 raw Linux kernel, and used the Linux "fpgautil" utility to dynamically program the FPGA with
+the custom CNN bitstream.
+
+
+Note: - 
+========
+1. Important config files: -
+project-spec/configs/config
+project-spec/meta-user/conf/petalinuxbsp.conf
+
+
+2. 
