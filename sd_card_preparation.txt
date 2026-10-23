@@ -1,0 +1,75 @@
+
+
+
+Step 1: Identify and Unmount the SD Card
+--------------------------------------------
+
+# Check which device is your SD card (e.g., /dev/sdb)
+lsblk
+
+# Unmount any partitions that auto-mounted (replace 'sdX' with your device)
+sudo umount /dev/sdX1
+sudo umount /dev/sdX2
+
+Step 2: Wipe and Partition the SD Card
+--------------------------------------------
+# Wipe the existing partition table
+sudo wipefs -a /dev/sdX
+
+# Create a new DOS (MBR) partition table
+sudo parted /dev/sdX --script mklabel msdos
+
+# Create the 1GB boot partition
+sudo parted /dev/sdX --script mkpart primary fat32 1MiB 1025MiB
+
+# Mark the first partition as bootable
+sudo parted /dev/sdX --script set 1 boot on
+
+# Create the rootfs partition using the rest of the space
+sudo parted /dev/sdX --script mkpart primary ext4 1025MiB 100%
+
+ Step 3: Format the Partitions
+ ----------------------------------------
+ # Format partition 1 as FAT32
+sudo mkfs.vfat -F 32 -n BOOT /dev/sdX1
+
+# Format partition 2 as EXT4
+sudo mkfs.ext4 -L rootfs /dev/sdX2
+
+Step 4: Mount and Copy the Boot Files
+-------------------------------------------
+# Create a mount point and mount the boot partition
+sudo mkdir -p /mnt/boot
+sudo mount /dev/sdX1 /mnt/boot
+
+# Go to your PetaLinux images folder
+cd ~/Documents/Kria-KV260/Peta_Projects/KV260_Linux/images/linux/
+
+# Copy the required files to the SD card
+sudo cp BOOT.BIN /mnt/boot/
+sudo cp boot.scr /mnt/boot/
+sudo cp Image /mnt/boot/
+sudo cp ramdisk.cpio.gz.u-boot /mnt/boot/
+sudo cp system.dtb /mnt/boot/
+
+# (Optional but recommended) Copy the bitstream so you can load it manually from U-Boot
+sudo cp system.bit.bin /mnt/boot/
+
+# Ensure all data is written to the card before unmounting
+sudo sync
+sudo umount /mnt/boot
+
+Note: -
+--------
+Due to ramdisk.cpio.gz.u-boot, system boots completely on initramfs. If we want to use rootfs for persistent
+storage, then we would mount /dev/sdX2 to /mnt/rootfs and extract the rootfs.tar.gz into it.
+# Commands: - 
+mount /dev/sda2 /mnt/rootfs
+cd /mnt/rootfs
+tar -xzvf /home/mirfai/Documents/Kria-KV260/Peta_Projects/KV260_Linux/images/linux/rootfs.tar.gz
+
+Note: -
+------
+Login credential for petalinux: -
+login:    petalinuix
+password: petalinux
