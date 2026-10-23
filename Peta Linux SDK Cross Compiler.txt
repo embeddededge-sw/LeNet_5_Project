@@ -11,11 +11,17 @@ Peta Linux SDK Cross Compiler: -
 ====================================
 
 Each time you wish to use the SDK in a new shell session, you need to source the environment setup script e.g.
- $ . /opt/Petalinux_Cross_Compiler/environment-setup-cortexa72-cortexa53-amd-linux
+
+source /opt/Petalinux_Cross_Compiler/environment-setup-cortexa72-cortexa53-amd-linux
  
- echo $CC
+echo $CC
 
 $CC cnn_petalinux.c -o main_app
+
+Note:  If above source command gives error ".....you probably need to 'unset LD_LIBRARY_PATH'....", then run
+below command: -
+
+unset LD_LIBRARY_PATH
 
 
 Running cross compiled app on target: -
