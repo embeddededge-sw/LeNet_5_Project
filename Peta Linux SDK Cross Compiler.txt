@@ -1,0 +1,46 @@
+
+Building SDK: -
+-----------------
+ petalinux-build --sdk
+
+Installing SDK: -
+-----------------
+ ./images/linux/sdk.sh 
+
+Peta Linux SDK Cross Compiler: -
+====================================
+
+Each time you wish to use the SDK in a new shell session, you need to source the environment setup script e.g.
+ $ . /opt/Petalinux_Cross_Compiler/environment-setup-cortexa72-cortexa53-amd-linux
+ 
+ echo $CC
+
+$CC cnn_petalinux.c -o main_app
+
+
+Running cross compiled app on target: -
+------------------------------------------
+
+cd /home/root/App
+sudo fpgautil -b system.bit.bin
+sudo ./main_app
+
+
+DTSi File: -
+--------------
+File - project-spec/meta-user/recipes-bsp/device-tree/files/system-user.dtsi
+
+/include/ "system-conf.dtsi"
+
+&cnn_top_0 {
+    compatible = "generic-uio";
+    status = "okay";
+    /* Overwrite the reg property to cover control + BRAMs (256KB total) */
+    reg = <0x0 0xa0000000 0x0 0x40000>;
+};
+
+
+Files in /boot partition: -
+==============================
+
+BOOT.BIN  Image  boot.scr  ramdisk.cpio.gz.u-boot  system.bit.bin  system.dtb
