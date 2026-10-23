@@ -25,6 +25,8 @@ cd /home/root/App
 sudo fpgautil -b system.bit.bin
 sudo ./main_app
 
+Note: - Due to above fpgautil command, the dev node /dev/uio4 is generated.
+
 
 DTSi File: -
 --------------
