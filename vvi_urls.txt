@@ -1,0 +1,11 @@
+
+
+1. Xilinx wiki:-
+https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/3281321985/2025.1+Release
+
+2. Github reference: - 
+https://github.com/AISeQLab/BASIC_SOC_COURSE---Real-time_Handwritten_Digit_Recognition_on_FPGA/tree/main
+
+3. Petalinux build: - 
+https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Installation-Requirements
+https://docs.amd.com/r/en-US/ug1144-petalinux-tools-reference-guide/Booting-a-PetaLinux-Image-on-Hardware-with-SD-Card
