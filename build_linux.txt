@@ -12,3 +12,29 @@ petalinux-config -c kernel
 
 ## Config file: - (Yet to verify)
 project-spec/meta-user/recipes-kernel/linux/linux-xlnx/bsp.cfg
+
+
+## Integrating driver into petalinux: -
+
+# Change 1: -
+drivers/misc/Makefile - 
++ obj-$(CONFIG_CNN_KV260)               += cnn_kv260/
+
+# Change 2: -
+drivers/misc/Kconfig - 
++ source "drivers/misc/cnn_kv260/Kconfig"
+
+# Change 3: -
+drivers/misc/cnn_kv260/Makefile: -
++ obj-$(CONFIG_CNN_KV260) += cnn_accel.o
+
+# Change 4: -
+drivers/misc/cnn_kv260/Kconfig: -
++ # SPDX-License-Identifier: GPL-2.0
++ config CNN_KV260
++        tristate "CNN custom IP on KV260"
++        help
++          This is driver for custom CNN IP on KV260
++        board.
+
+
