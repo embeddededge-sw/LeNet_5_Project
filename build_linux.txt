@@ -1,0 +1,7 @@
+
+cd ~/Documents/Kria-KV260/Peta_Projects/KV260_Linux
+source /opt/PetaLinux_SDK/settings.sh
+
+petalinux-devtool modify linux-xlnx
+
+cd components/yocto/workspace/sources/linux-xlnx/
