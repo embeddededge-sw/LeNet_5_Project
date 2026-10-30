@@ -35,6 +35,9 @@ drivers/misc/cnn_kv260/Kconfig: -
 +        tristate "CNN custom IP on KV260"
 +        help
 +          This is driver for custom CNN IP on KV260
-+        board.
+
+# Change 5: -
+project-spec/meta-user/recipes-kernel/linux/linux-xlnx/bsp.cfg
++ CONFIG_CNN_KV260=y
 
 
