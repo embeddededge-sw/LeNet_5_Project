@@ -1,0 +1,12 @@
+
+## Go to below folder
+cd ~/Documents/Kria-KV260/Peta_Projects/KV260_Linux/images/linux
+
+## Create file - bitstream.bif with below content: -
+all:
+{
+    [destination_device = pl] design_1_wrapper.bit
+}
+
+## Run below command to generate .bit.bin file
+bootgen -image bitstream.bif -arch zynqmp -o design_1_wrapper.bit.bin -w
