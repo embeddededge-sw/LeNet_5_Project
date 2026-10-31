@@ -41,3 +41,14 @@ project-spec/meta-user/recipes-kernel/linux/linux-xlnx/bsp.cfg
 + CONFIG_CNN_KV260=y
 
 
+
+#### Build commands
+
+source /opt/PetaLinux_SDK/settings.sh
+
+# Menuconfig
+petalinux-config -c kernel
+
+petalinux-build -c kernel -x cleansstate
+petalinux-build -c kernel
+petalinux-build
