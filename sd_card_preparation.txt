@@ -64,9 +64,10 @@ Note: -
 Due to ramdisk.cpio.gz.u-boot, system boots completely on initramfs. If we want to use rootfs for persistent
 storage, then we would mount /dev/sdX2 to /mnt/rootfs and extract the rootfs.tar.gz into it.
 # Commands: - 
-mount /dev/sda2 /mnt/rootfs
+sudo mount /dev/sda2 /mnt/rootfs
 cd /mnt/rootfs
-tar -xzvf /home/mirfai/Documents/Kria-KV260/Peta_Projects/KV260_Linux/images/linux/rootfs.tar.gz
+sudo tar -xzvf /home/mirfai/Documents/Kria-KV260/Peta_Projects/KV260_Linux/images/linux/rootfs.tar.gz
+sudo sync
 
 Note: -
 ------
