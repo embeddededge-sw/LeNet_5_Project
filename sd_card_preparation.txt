@@ -68,6 +68,7 @@ sudo mount /dev/sda2 /mnt/rootfs
 cd /mnt/rootfs
 sudo tar -xzvf /home/mirfai/Documents/Kria-KV260/Peta_Projects/KV260_Linux/images/linux/rootfs.tar.gz
 sudo sync
+sudo umount /mnt/rootfs
 
 Note: -
 ------
